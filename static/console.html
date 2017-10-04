@@ -13,20 +13,20 @@
 			width:100%;height:100%;
 		}
 	</style>
-    <script src="xterm.js" ></script>
-    <script src="addons/fit/fit.js" ></script>
-    <script src="addons/fullscreen/fullscreen.js" ></script>
-    <script src="encoding-indexes.js"></script>
-    <script src="encoding.js"></script>
+	<script src="xterm.js" ></script>
+	<script src="addons/fit/fit.js" ></script>
+	<script src="addons/fullscreen/fullscreen.js" ></script>
+	<script src="encoding-indexes.js"></script>
+	<script src="encoding.js"></script>
 </head>
 <body>
-	<div id="xterm">
+<div id="xterm">
 
-    </div>
-	<script>
-    if(window.WebSocket==null){
-        alert("你的浏览器不支持websocket，请更换浏览器")
-    }
+</div>
+<script>
+	if(window.WebSocket==null){
+		alert("你的浏览器不支持websocket，请更换浏览器")
+	}
 	var term;
 	var protocol=window.location.protocol=="https"?"wss://":"ws://";
 	var port=window.location.port==""?"":":"+window.location.port;
@@ -40,10 +40,10 @@
 	function resize(){
 		term.fit();
 	}
-    websocket.onerror = function(e) {
-	    console.log(e)
-        alert("无法连接到服务器")
-    }
+	websocket.onerror = function(e) {
+		console.log(e)
+		alert("无法连接到服务器")
+	}
 	websocket.onopen = function(e) {
 		term = new Terminal({
 			screenKeys: true,
@@ -69,15 +69,15 @@
 		term.toggleFullscreen(true);
 
 		websocket.onmessage = function(e) {
-            term.write(arraybufferToStr(e.data));
+			term.write(arraybufferToStr(e.data));
 		}
 		websocket.onclose = function() {
-		    term.destroy();
+			term.destroy();
 			alert("服务器连接已断开，如需重新连接请刷新");
 		}
 
 		window.onresize = resize;
 	}
-	</script>
+</script>
 </body>
 </html>
