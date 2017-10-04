@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+	<title>虚拟终端</title>
+	<link rel="stylesheet" href="xterm.css" />
+	<link rel="stylesheet" href="addons/fullscreen/fullscreen.css" />
+	<style>
+		html,body{
+			width:100%;height:100%;
+			overflow:hidden;
+		}
+		#xterm{
+			width:100%;height:100%;
+		}
+	</style>
+    <script src="xterm.js" ></script>
+    <script src="addons/fit/fit.js" ></script>
+    <script src="addons/fullscreen/fullscreen.js" ></script>
+    <script src="encoding-indexes.js"></script>
+    <script src="encoding.js"></script>
+</head>
+<body>
+	<div id="xterm">
+
+    </div>
+	<script>
+    if(window.WebSocket==null){
+        alert("你的浏览器不支持websocket，请更换浏览器")
+    }
+	var term;
+	var protocol=window.location.protocol=="https"?"wss://":"ws://";
+	var port=window.location.port==""?"":":"+window.location.port;
+
+	var websocket = new WebSocket(protocol+window.location.hostname+port+"/plugins/WebTerm/term");
+	websocket.binaryType = "arraybuffer";
+
+	function arraybufferToStr(buf) {
+		return new TextDecoder("utf-8").decode(new Uint8Array(buf));
+	}
+	function resize(){
+		term.fit();
+	}
+    websocket.onerror = function(e) {
+	    console.log(e)
+        alert("无法连接到服务器")
+    }
+	websocket.onopen = function(e) {
+		term = new Terminal({
+			screenKeys: true,
+			cursorBlink: true,
+			scrollback:1000,
+		});
+
+		term.on('data', function(data) {
+			websocket.send(new TextEncoder().encode(data));
+		});
+
+		term.on('resize', function(e) {
+			windowJson=JSON.stringify({Cols: e.cols, Rows:e.rows})
+			websocket.send(JSON.stringify({"Cmd":"resize","Data":windowJson}))
+		});
+
+		term.on('title', function(title) {
+			document.title = title;
+		});
+
+		term.open(document.getElementById('xterm'));
+		term.fit();
+		term.toggleFullscreen(true);
+
+		websocket.onmessage = function(e) {
+            term.write(arraybufferToStr(e.data));
+		}
+		websocket.onclose = function() {
+		    term.destroy();
+			alert("服务器连接已断开，如需重新连接请刷新");
+		}
+
+		window.onresize = resize;
+	}
+	</script>
+</body>
+</html>
